@@ -28,12 +28,6 @@ jobs:
       - name: List build artifact directory
         run: ls -la ./buildArtifact
 
-      - name: Install dependencies in build artifact directory
-        run: npm install --prefix ./buildArtifact
-
-      - name: Verify installed packages
-        run: ls -la ./buildArtifact/node_modules
-
       - name: Deploy to Vercel (Staging)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
