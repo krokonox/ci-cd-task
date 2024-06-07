@@ -1,0 +1,57 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches: '*' # Run workflow on PRs to any branch
+
+  push:
+    branches-ignore: main # Run workflow on pushes to any branch except the main branch
+
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+
+  workflow_call: # Allows this workflow to be called from the deployment workflow
+
+env:
+  artifactName: buildArtifact
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo source code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.artifactName }}
+          path: build/ # Directory containing the build artifacts
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout the repo source code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
