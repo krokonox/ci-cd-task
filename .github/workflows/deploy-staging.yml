@@ -6,6 +6,7 @@ on:
 
 env:
   artifactName: buildArtifact # This must match the artifact name in the build-and-test workflow
+  projectName: "ci-cd-task" # Manually specify the project name
 
 jobs:
   build-and-test:
@@ -33,14 +34,6 @@ jobs:
           cd ./buildArtifact
           npm install
 
-      - name: Ensure valid project name
-        id: ensure_valid_project_name
-        run: |
-          PROJECT_NAME=$(basename $(pwd))
-          VALID_PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9._-' | sed 's/---//g')
-          echo "Valid project name: $VALID_PROJECT_NAME"
-          echo "::set-output name=project_name::$VALID_PROJECT_NAME"
-
       - name: Log request headers
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -51,7 +44,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{
-              "name": "'${{ steps.ensure_valid_project_name.outputs.project_name }}'",
+              "name": "'${{ env.projectName }}'",
               "target": "staging",
               "builds": [],
               "env": {}
@@ -62,4 +55,4 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           cd ./buildArtifact
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./ --debug
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./ --debug --name ${{ env.projectName }}
