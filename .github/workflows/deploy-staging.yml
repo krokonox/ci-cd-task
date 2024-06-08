@@ -17,18 +17,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the new repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Update to v4
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4 # Update to v4
         with:
           name: ${{ env.artifactName }}
           path: ./buildArtifact
 
-      - name: List build artifact directory after downloading
+      - name: List build artifact directory
         run: ls -la ./buildArtifact
 
       - name: Deploy to Vercel (Staging)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./buildArtifact --debug
+
