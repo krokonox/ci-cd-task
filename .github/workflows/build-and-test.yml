@@ -27,20 +27,26 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --verbose
 
       - name: Build project
-        run: npm run build
+        run: npm run build --verbose
 
       - name: List build directory contents
         run: ls -la build/
+
+      - name: Create Vercel output directory
+        run: mkdir -p .vercel/output
+
+      - name: Copy build files to Vercel output directory
+        run: cp -R build/* .vercel/output
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4 # Update to v4
         with:
           name: ${{ env.artifactName }}
           path: |
-            build/
+            .vercel/output
             node_modules/
             package.json
             package-lock.json
@@ -58,7 +64,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --verbose
 
       - name: Run tests
-        run: npm test
+        run: npm test --verbose
