@@ -15,6 +15,9 @@ jobs:
   deploy-to-staging:
     needs: build-and-test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ci-cd-task # Set the working directory to the nested app directory
     steps:
       - name: Checkout the new repository
         uses: actions/checkout@v4
@@ -25,11 +28,10 @@ jobs:
           name: ${{ env.artifactName }}
           path: ./buildArtifact
 
-      - name: List build artifact directory
+      - name: List build artifact directory after downloading
         run: ls -la ./buildArtifact
 
       - name: Deploy to Vercel (Staging)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./buildArtifact --name ci-cd-task --debug
-
+        run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./buildArtifact --debug
