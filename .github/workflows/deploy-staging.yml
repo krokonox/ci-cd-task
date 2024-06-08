@@ -15,9 +15,6 @@ jobs:
   deploy-to-staging:
     needs: build-and-test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ci-cd-task # Set the working directory to the nested app directory
     steps:
       - name: Checkout the new repository
         uses: actions/checkout@v4
