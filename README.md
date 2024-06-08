@@ -2,6 +2,8 @@
 
 This repository contains a simple React project created with Create React App and TypeScript, with a CI/CD pipeline set up using GitHub Actions. The pipeline includes steps for building, testing, and deploying the application to Vercel.
 
+Production available at: https://ci-cd-task.vercel.app/
+
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Project Setup](#project-setup)
