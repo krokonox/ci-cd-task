@@ -7,7 +7,7 @@ on:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  artifactName: buildArtifact-${{ github.ref_name }}-${{ github.sha.slice(0, 7) }}-${{ github.run_number }}
+  artifactName: buildArtifact-${{ github.ref_name }}-${{ github.sha.substr(0, 7) }}-${{ github.run_number }}
   projectName: "ci-cd-task" 
 
 jobs:
