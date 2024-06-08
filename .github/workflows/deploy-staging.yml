@@ -28,8 +28,31 @@ jobs:
       - name: List build artifact directory
         run: ls -la ./buildArtifact
 
+      - name: Ensure valid project name
+        id: ensure_valid_project_name
+        run: |
+          PROJECT_NAME=$(basename $(pwd))
+          VALID_PROJECT_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9._-' | sed 's/---//g')
+          echo "Valid project name: $VALID_PROJECT_NAME"
+          echo "::set-output name=project_name::$VALID_PROJECT_NAME"
+
+      - name: Log request headers
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          curl -i -X POST https://api.vercel.com/v12/now/deployments \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "'${{ steps.ensure_valid_project_name.outputs.project_name }}'",
+              "target": "staging",
+              "builds": [],
+              "env": {}
+            }'
+
       - name: Deploy to Vercel (Staging)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./buildArtifact --debug
-
+        run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./buildArtifact --debug --name ${{ steps.ensure_valid_project_name.outputs.project_name }}
