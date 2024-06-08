@@ -4,6 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: '*'
+  workflow_dispatch:
+  workflow_call:
 
 env:
   artifactName: buildArtifact
