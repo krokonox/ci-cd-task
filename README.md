@@ -54,7 +54,7 @@ This workflow runs on pull requests to any branch and pushes to any branch excep
 3. Caches `node_modules`.
 4. Installs dependencies.
 5. Builds the project.
-6. Uploads the build artifact.
+6. Uploads the build artifact with a version tag.
 7. Runs tests.
 
 ```yaml
