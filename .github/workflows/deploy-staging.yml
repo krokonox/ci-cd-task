@@ -29,30 +29,10 @@ jobs:
       - name: List build artifact directory
         run: ls -la ./buildArtifact
 
-      - name: Install dependencies in buildArtifact directory
-        run: |
-          cd ./buildArtifact
-          npm install --verbose
-
-      - name: Log request headers
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          curl -i -X POST https://api.vercel.com/v12/now/deployments \
-            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "name": "'${{ env.projectName }}'",
-              "target": "staging",
-              "builds": [],
-              "env": {}
-            }'
-
       - name: Deploy to Vercel (Staging)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          cd ./buildArtifact
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./build --debug --name ${{ env.projectName }} --build-env VERCEL_DEBUG=1
+          cd ./buildArtifact/build
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./ --debug --name ${{ env.projectName }}
+
