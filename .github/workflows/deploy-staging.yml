@@ -5,6 +5,8 @@ on:
     branches: main # Trigger the workflow on a push to the main branch
 
 env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   artifactName: buildArtifact # This must match the artifact name in the build-and-test workflow
   projectName: "ci-cd-task" # Manually specify the project name
 
@@ -17,8 +19,10 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the new repository
-        uses: actions/checkout@v4 # Update to v4
+      - uses: actions/checkout@v4 # Update to v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
 
       - name: Download artifact
         uses: actions/download-artifact@v4 # Update to v4
@@ -29,10 +33,9 @@ jobs:
       - name: List build artifact directory
         run: ls -la ./buildArtifact
 
-      - name: Deploy to Vercel (Staging)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          cd ./buildArtifact/build
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./ --debug --name ${{ env.projectName }}
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
