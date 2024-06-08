@@ -47,7 +47,6 @@ jobs:
           name: ${{ env.artifactName }}
           path: |
             .vercel/output
-            node_modules/
             package.json
             package-lock.json
 
