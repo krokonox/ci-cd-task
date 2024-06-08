@@ -1,15 +1,13 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - main # Trigger the workflow on a push to the main branch
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   artifactName: buildArtifact # This must match the artifact name in the build-and-test workflow
-  projectName: "ci-cd-task" # Manually specify the project name
+  projectName: "ci-cd-task" 
 
 jobs:
   build-and-test:
