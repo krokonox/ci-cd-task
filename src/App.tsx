@@ -8,15 +8,15 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/App.tsx</code> and save to reload.
+          Stop wasting paper!
         </p>
         <a
           className="App-link"
-          href="https://reactjs.org"
+          href="https://happyops.com/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Test React
+          Digitilize your factory
         </a>
       </header>
     </div>
