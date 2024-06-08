@@ -8,7 +8,7 @@ on:
   workflow_call:
 
 env:
-  artifactName: buildArtifact
+  artifactName: buildArtifact-${{ github.ref_name }}-${{ github.sha.slice(0, 7) }}
 
 jobs:
   build:
