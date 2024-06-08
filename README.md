@@ -1,46 +1,203 @@
-# Getting Started with Create React App
+# React Project with CI/CD Pipeline
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains a simple React project created with Create React App and TypeScript, with a CI/CD pipeline set up using GitHub Actions. The pipeline includes steps for building, testing, and deploying the application to Vercel.
 
-## Available Scripts
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Project Setup](#project-setup)
+- [CI/CD Pipeline](#cicd-pipeline)
+  - [Build and Test Workflow](#build-and-test-workflow)
+  - [Deploy to Staging Workflow](#deploy-to-staging-workflow)
+  - [Deploy to Production Workflow](#deploy-to-production-workflow)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-In the project directory, you can run:
+## Prerequisites
 
-### `npm start`
+Before you begin, ensure you have the following installed on your local machine:
+- Node.js (version 20)
+- npm (Node Package Manager)
+- Git
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Project Setup
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/krokonox/ci-cd-task.git
+   cd ci-cd-task
+   ```
 
-### `npm test`
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. **Start the development server:**
+   ```bash
+   npm start
+   ```
 
-### `npm run build`
+   The application will be available at `http://localhost:3000`.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## CI/CD Pipeline
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The CI/CD pipeline is implemented using GitHub Actions and consists of three main workflows:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Build and Test Workflow
 
-### `npm run eject`
+This workflow runs on pull requests to any branch and pushes to any branch except `main`. It performs the following steps:
+1. Checks out the source code.
+2. Sets up Node.js.
+3. Caches `node_modules`.
+4. Installs dependencies.
+5. Builds the project.
+6. Uploads the build artifact.
+7. Runs tests.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```yaml
+name: Build and Test
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+on:
+  pull_request:
+    branches: '*'
+  push:
+    branches-ignore: main
+  workflow_dispatch:
+  workflow_call:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+env:
+  artifactName: buildArtifact
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo source code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install --verbose
+      - name: Build project
+        run: npm run build --verbose
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.artifactName }}
+          path: build/
 
-## Learn More
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout the repo source code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install --verbose
+      - name: Run tests
+        run: npm test --verbose
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Deploy to Staging Workflow
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+This workflow triggers on pushes to the `main` branch and performs the following steps:
+1. Runs the `build-and-test` workflow.
+2. Downloads the build artifact.
+3. Deploys the application to Vercel's staging environment.
+
+```yaml
+name: Deploy to Staging
+
+on:
+  push:
+    branches: main
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  artifactName: buildArtifact
+  projectName: "ci-cd-task"
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
+    secrets: inherit
+
+  deploy-to-staging:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.artifactName }}
+          path: ./buildArtifact
+      - name: List build artifact directory
+        run: ls -la ./buildArtifact
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+```
+
+### Deploy to Production Workflow
+
+This workflow can be manually triggered from the Actions tab and performs the following steps:
+1. Runs the `build-and-test` workflow.
+2. Downloads the build artifact.
+3. Deploys the application to Vercel's production environment.
+
+```yaml
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  artifactName: buildArtifact
+  projectName: "ci-cd-task"
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
+    secrets: inherit
+
+  deploy-to-production:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.artifactName }}
+          path: ./buildArtifact
+      - name: List build artifact directory
+        run: ls -la ./buildArtifact
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+```
