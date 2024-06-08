@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies in buildArtifact directory
         run: |
           cd ./buildArtifact
-          npm install
+          npm install --verbose
 
       - name: Log request headers
         env:
@@ -55,4 +55,4 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           cd ./buildArtifact
-          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./ --debug --name ${{ env.projectName }}
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --cwd ./build --debug --name ${{ env.projectName }} --build-env VERCEL_DEBUG=1
